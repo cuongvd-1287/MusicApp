@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".screen.listSong.SongListFragment">
+    
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            style="@style/ActionBar"
+            app:title="@string/song_list"/>
+
+    </com.google.android.material.appbar.AppBarLayout>
+    <ListView
+        android:id="@+id/listSong"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appbar"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:padding="@dimen/dp_10"
+        android:background="@drawable/border_rec"
+        android:id="@+id/sub_side"
+        android:visibility="invisible">
+
+        <ImageView
+            android:id="@+id/img_music_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_music_note"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/title_play"
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="wrap_content"
+            android:text="@string/title"
+            app:layout_constraintEnd_toStartOf="@id/sub_previous"
+            app:layout_constraintStart_toEndOf="@id/img_music_note"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="@dimen/title"
+            android:layout_marginStart="@dimen/dp_10"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/sub_title_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/title_play"
+            app:layout_constraintTop_toBottomOf="@id/title_play"
+            android:text="@string/subtitle"
+            android:textColor="@color/gray"
+            android:textStyle="normal"
+            android:textSize="@dimen/sub_title"/>
+
+        <ImageView
+            android:id="@+id/sub_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/ic_next"/>
+
+        <ImageView
+            android:id="@+id/sub_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/sub_next"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/ic_pause"/>
+
+        <ImageView
+            android:id="@+id/sub_previous"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/sub_play"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/ic_previous"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
