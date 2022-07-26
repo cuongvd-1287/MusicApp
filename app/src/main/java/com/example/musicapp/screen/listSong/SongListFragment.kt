@@ -1,16 +1,20 @@
 package com.example.musicapp.screen.listSong
 
+import android.media.MediaMetadataRetriever
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.bumptech.glide.Glide
 import com.example.musicapp.BaseFragment
 import com.example.musicapp.R
-import com.example.musicapp.dataSource.SongDataSource
+import com.example.musicapp.dataSource.SongLocalDataSource
+import com.example.musicapp.dataSource.SongRepository
 import com.example.musicapp.dataSource.model.Song
 import com.example.musicapp.databinding.FragmentSongListBinding
+import com.example.musicapp.screen.MainActivity
 import com.example.musicapp.screen.SongPresenter
 import com.example.musicapp.screen.listSong.adapter.SongAdapter
 import com.example.musicapp.screen.play.PlayFragment
@@ -19,50 +23,72 @@ class SongListFragment : BaseFragment(), SongsContract.View, AdapterView.OnItemC
 
     private lateinit var songPresenter: SongPresenter
     private lateinit var binding: FragmentSongListBinding
-    private lateinit var listView: ListView
-    private lateinit var playingSide: ConstraintLayout
-    private lateinit var titlePlay: TextView
-    private lateinit var subTitlePlay: TextView
-    private lateinit var subPrevious: ImageView
-    private lateinit var subPlay: ImageView
-    private lateinit var subNext: ImageView
+    private val listView: ListView by lazy { binding.listSong }
+    private val playingSide: ConstraintLayout by lazy { binding.subSide }
+    private val titlePlay: TextView by lazy { binding.titlePlay }
+    private val subTitlePlay: TextView by lazy { binding.subTitlePlay }
+    private val subPrevious: ImageView by lazy { binding.subPrevious }
+    private val subPlay: ImageView by lazy { binding.subPlay }
+    private val subNext: ImageView by lazy { binding.subNext }
+    private val subImg: ImageView by lazy { binding.imgMusicNote }
+    private val dataPasser: OnDataPass by lazy { context as OnDataPass }
+    private val mActivity: MainActivity by lazy { activity as MainActivity }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSongListBinding.inflate(layoutInflater)
-        listView = binding.listSong
-        playingSide = binding.subSide
-        titlePlay = binding.titlePlay
-        subTitlePlay = binding.subTitlePlay
-        subPrevious = binding.subPrevious
-        subPlay = binding.subPlay
-        subNext = binding.subNext
-
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        songPresenter = SongPresenter(SongDataSource.getInstance(requireActivity().applicationContext))
-        setSong(songPresenter.getSong())
-        addListener(subPrevious, subPlay, subNext){ _, song -> changeText(song) }
-        playingSide.setOnClickListener { addPlayFragment() }
+    override fun initView() {
+        val playFragment = activity?.intent?.getBooleanExtra("playFragment", false)
+        if (playFragment == true){
+            addPlayFragment()
+        }
+        addListener()
     }
 
-    override fun setSong(list: MutableList<Song>) {
-        songList = list
-        listView.adapter = context?.let { SongAdapter(it,list) }
-        listView.onItemClickListener = this
+    override fun initData() {
+        songPresenter = SongPresenter(SongRepository.getInstance(SongLocalDataSource.getInstance()))
+        activity?.let {
+            val list = songPresenter.getSong(it.applicationContext)
+            setSong(list)
+            listView.onItemClickListener = this
+        }
+        val callBack: (Int, Song, Boolean) -> Unit = {
+                img, song, isChangeImg ->
+                    subPlay.setImageResource(img)
+                    titlePlay.text = song.title
+                    subTitlePlay.text = song.artist
+                    if (isChangeImg) {
+                        loadImg(song)
+                    }
+        }
+        if (mActivity.serviceBound){
+            mActivity.musicService.addCallBack (callBack)
+        }else{
+            dataPasser.passCallBack(callBack)
+        }
+    }
+
+    private fun setSong(list: MutableList<Song>) {
+        listView.adapter = context?.let { SongAdapter(it, list) }
+        if (mActivity.serviceBound){
+            mActivity.musicService.setSongList(list)
+        } else{
+            dataPasser.passData(list)
+        }
     }
 
     override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-        playingSide.visibility = View.VISIBLE
-        currentIndex = p2
-        titlePlay.text = songList[currentIndex].title
-        subTitlePlay.text = songList[currentIndex].artist
-        playSong()
-        addPlayFragment()
+        if (mActivity.serviceBound){
+            mActivity.musicService.currentIndex = p2
+            mActivity.musicService.playSong()
+            playingSide.visibility = View.VISIBLE
+            addPlayFragment()
+        }
     }
 
     private fun addPlayFragment(){
@@ -73,18 +99,48 @@ class SongListFragment : BaseFragment(), SongsContract.View, AdapterView.OnItemC
                 R.anim.fade_in,
                 R.anim.slide_out
             )
-            .add(R.id.layoutContainer, PlayFragment{ img, song -> changeData(img, song) })
+            .add(R.id.layoutContainer, PlayFragment())
             .addToBackStack(null)
             .commit()
     }
 
-    private fun changeData(img: Int, song: Song){
-        changeText(song)
-        subPlay.setImageResource(img)
+    private fun loadImg(song: Song){
+        val mmr = MediaMetadataRetriever()
+        mmr.setDataSource(song.path)
+        Glide.with(mActivity.applicationContext)
+            .load(mmr.embeddedPicture)
+            .placeholder(R.drawable.ic_baseline_music_note)
+            .into(subImg)
     }
 
-    private fun changeText(song: Song){
-        titlePlay.text = song.title
-        subTitlePlay.text = song.artist
+    private fun addListener(){
+        subNext.setOnClickListener{
+            if (mActivity.serviceBound){
+                mActivity.musicService.nextSong()
+            }
+        }
+
+        subPrevious.setOnClickListener{
+            if (mActivity.serviceBound){
+                mActivity.musicService.previousSong()
+            }
+        }
+
+        subPlay.setOnClickListener{
+            if (mActivity.serviceBound){
+                mActivity.musicService.playPause()
+            }
+        }
+
+        playingSide.setOnClickListener{
+            if (mActivity.serviceBound){
+                addPlayFragment()
+            }
+        }
+    }
+
+    interface OnDataPass{
+        fun passData(list: MutableList<Song>)
+        fun passCallBack(callBack: (Int, Song, Boolean) -> Unit)
     }
 }
