@@ -13,16 +13,16 @@ import android.os.Build
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.example.musicapp.dataSource.model.Song
 import androidx.media.app.NotificationCompat.MediaStyle
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.musicapp.R
+import com.example.musicapp.constant.*
+import com.example.musicapp.dataSource.model.Song
 import com.example.musicapp.screen.MainActivity
 
 class AppNotification(context: Context) {
@@ -30,19 +30,21 @@ class AppNotification(context: Context) {
     private val channelId = "1000"
     private val notificationId = 1100
     private val requestCode = 0
+    private val notificationManagerCompat: NotificationManagerCompat
     private val mediaSession: MediaSessionCompat
     private val contentPending: PendingIntent
     private val previousPending: PendingIntent
     private val pausePending: PendingIntent
     private val nextPending: PendingIntent
-    private lateinit var seekPending: PendingIntent
+    private var seekPending: PendingIntent? = null
 
     init {
         this.context = context
-        this.mediaSession = MediaSessionCompat(context, "tag")
+        this.mediaSession = MediaSessionCompat(context, mediaSessionTag)
         createChannel()
+        this.notificationManagerCompat = NotificationManagerCompat.from(context)
         val content = Intent(context, MainActivity::class.java)
-        content.putExtra("playFragment", true)
+        content.putExtra(contentIntentName, true)
         this.contentPending = PendingIntent.getActivity(context, requestCode, content
             , PendingIntent.FLAG_CANCEL_CURRENT)
 
@@ -57,10 +59,10 @@ class AppNotification(context: Context) {
         this.mediaSession.setCallback(object :MediaSessionCompat.Callback(){
             override fun onSeekTo(pos: Long) {
                 val intentSeek = Intent(ACTION_SEEK)
-                intentSeek.putExtra("position", pos)
+                intentSeek.putExtra(seekIntentName, pos)
                 seekPending = PendingIntent.getBroadcast(context, requestCode, intentSeek
                     , PendingIntent.FLAG_UPDATE_CURRENT)
-                seekPending.send()
+                seekPending?.send()
                 updatePlayBackState(pos)
             }
         })
@@ -89,7 +91,6 @@ class AppNotification(context: Context) {
 
                 override fun onLoadFailed(errorDrawable: Drawable?) {
                     super.onLoadFailed(errorDrawable)
-                    Log.v("notification", "yes")
                     mediaSession.setMetadata(metadataBuilder.build())
                     createNotification(playPauseImg)
                 }
@@ -104,22 +105,21 @@ class AppNotification(context: Context) {
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(contentPending)
-            .addAction(R.drawable.ic_previous, "previous", previousPending)
-            .addAction(playPauseImg, "pause", pausePending)
-            .addAction(R.drawable.ic_next, "next", nextPending)
+            .addAction(R.drawable.ic_previous, actionPreviousTitle, previousPending)
+            .addAction(playPauseImg, actionPauseTitle, pausePending)
+            .addAction(R.drawable.ic_next, actionNextTitle, nextPending)
             .setStyle( MediaStyle()
                 .setShowActionsInCompactView(0, 1, 2)
                 .setMediaSession(mediaSession.sessionToken))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
-        val notificationManagerCombat = NotificationManagerCompat.from(context)
-        notificationManagerCombat.notify(notificationId, builder)
+        notificationManagerCompat.notify(notificationId, builder)
     }
 
     private fun createChannel(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Show Music Controller", NotificationManager.IMPORTANCE_LOW)
-            channel.description = "Music Controller"
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+            channel.description = channelDescription
             val notificationManager = context.getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
@@ -138,12 +138,5 @@ class AppNotification(context: Context) {
             .setState(PlaybackStateCompat.STATE_PLAYING, position, 0F)
             .setActions(PlaybackStateCompat.ACTION_PAUSE)
             .build())
-    }
-
-    companion object {
-        const val ACTION_PREVIOUS = "PREVIOUS"
-        const val ACTION_PAUSE = "PAUSE"
-        const val ACTION_NEXT = "NEXT"
-        const val ACTION_SEEK = "SEEK"
     }
 }

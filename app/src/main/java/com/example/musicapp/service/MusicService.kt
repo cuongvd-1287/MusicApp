@@ -8,25 +8,27 @@ import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
 import com.example.musicapp.R
 import com.example.musicapp.dataSource.model.Song
 import com.example.musicapp.notification.AppNotification
+import com.example.musicapp.constant.*
 
 class MusicService: Service() {
     private val myBinder = MyBinder()
     private val mediaPlayer: MediaPlayer by lazy { MediaPlayer() }
     private val appNotification: AppNotification by lazy { AppNotification(applicationContext) }
     var playTag = 0
-    lateinit var mSongList: MutableList<Song>
+    val mSongList: MutableList<Song> = mutableListOf()
     var currentIndex = -1
     private val broadcastReceiver = object: BroadcastReceiver(){
         override fun onReceive(p0: Context?, intent: Intent?) {
             when(intent?.action){
-                AppNotification.ACTION_NEXT -> nextSong()
-                AppNotification.ACTION_PAUSE -> playPause()
-                AppNotification.ACTION_PREVIOUS -> previousSong()
-                AppNotification.ACTION_SEEK -> {
-                    val position = intent.extras?.getLong("position") ?: getCurrentPosition()
+                ACTION_NEXT -> nextSong()
+                ACTION_PAUSE -> playPause()
+                ACTION_PREVIOUS -> previousSong()
+                ACTION_SEEK -> {
+                    val position = intent.extras?.getLong(seekIntentName) ?: getCurrentPosition()
                     mediaSeekTo(position.toInt())
                 }
             }
@@ -47,10 +49,10 @@ class MusicService: Service() {
             }
         }
         val filter = IntentFilter()
-        filter.addAction(AppNotification.ACTION_PREVIOUS)
-        filter.addAction(AppNotification.ACTION_PAUSE)
-        filter.addAction(AppNotification.ACTION_NEXT)
-        filter.addAction(AppNotification.ACTION_SEEK)
+        filter.addAction(ACTION_PREVIOUS)
+        filter.addAction(ACTION_PAUSE)
+        filter.addAction(ACTION_NEXT)
+        filter.addAction(ACTION_SEEK)
         applicationContext.registerReceiver(broadcastReceiver, filter)
     }
 
@@ -69,7 +71,7 @@ class MusicService: Service() {
     }
 
     fun setSongList(list: MutableList<Song>){
-        mSongList = list
+        mSongList.addAll(list)
     }
 
     fun playSong(){
@@ -111,12 +113,12 @@ class MusicService: Service() {
         }
     }
 
-    fun addCallBack(change: (Int, Song, Boolean) -> Unit){
-        changeData.add { img, song, isChangeImg -> change(img, song, isChangeImg) }
+    fun addCallBack(change: ((Int, Song, Boolean) -> Unit)?){
+        changeData.add { img, song, isChangeImg -> change?.invoke(img, song, isChangeImg) }
     }
 
     private fun callChangeData(img: Int, song: Song, isChangeImg: Boolean){
-        changeData.forEach { it(img, song, isChangeImg) }
+        changeData.forEach { it?.invoke(img, song, isChangeImg) }
     }
 
     private fun shuffle() {
@@ -130,7 +132,7 @@ class MusicService: Service() {
     }
 
     companion object{
-        private var changeData = mutableListOf<(Int, Song, Boolean) -> Unit>()
+        private var changeData = mutableListOf<((Int, Song, Boolean) -> Unit)?>()
     }
 
     inner class MyBinder: Binder(){

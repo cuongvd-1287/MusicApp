@@ -7,10 +7,8 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
-import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.musicapp.BaseFragment
 import com.example.musicapp.R
@@ -22,17 +20,6 @@ import java.util.concurrent.TimeUnit
 class PlayFragment: BaseFragment() {
 
     private lateinit var binding: PlayFragmentBinding
-    private val playPause: ImageView by lazy { binding.playIc }
-    private val next: ImageView by lazy { binding.nextIc }
-    private val previous: ImageView by lazy { binding.previousIc }
-    private val playMode: ImageView by lazy { binding.playMode }
-    private val mseekBar: SeekBar by lazy { binding.seekBar }
-    private val currentProgress: TextView by lazy { binding.currentProgress }
-    private val totalTime: TextView by lazy { binding.totalProgress }
-    private val back: ImageView by lazy { binding.keyDown }
-    private val title: TextView by lazy { binding.titleSong }
-    private val subTitle: TextView by lazy { binding.subTitleSong }
-    private val imgMusic: ImageView by lazy { binding.imgMusic }
     private val mActivity: MainActivity by lazy { activity as MainActivity }
     private val dataPasser: OnDataPass by lazy { context as OnDataPass }
 
@@ -47,24 +34,28 @@ class PlayFragment: BaseFragment() {
 
 
     override fun initView() {
-        if (mActivity.serviceBound){
-            val index = mActivity.musicService.currentIndex
-            val mSong = mActivity.musicService.mSongList[index]
-            updateData(mSong)
-            loadImg(mSong)
-            when (mActivity.musicService.playTag){
-                1 -> playMode.setImageResource(R.drawable.ic_repeat_one)
-                2 -> playMode.setImageResource(R.drawable.ic_shuffle)
+        if (mActivity.isServiceBound){
+            val index = mActivity.musicService?.currentIndex
+            val mSong = index?.let { mActivity.musicService?.mSongList?.get(it) }
+            mSong?.let {
+                updateData(it)
+                loadImg(it)
             }
-            if (!mActivity.musicService.isPlaying()){
-                playPause.setImageResource(R.drawable.ic_play)
+            when (mActivity.musicService?.playTag){
+                1 -> binding.playMode.setImageResource(R.drawable.ic_repeat_one)
+                2 -> binding.playMode.setImageResource(R.drawable.ic_shuffle)
+            }
+            mActivity.musicService?.isPlaying()?.let {
+                if (!it){
+                    binding.playIc.setImageResource(R.drawable.ic_play)
+                }
             }
             val handler = Handler(Looper.getMainLooper())
             val runnable = object: Runnable {
                 override fun run() {
-                    val curPosition = mActivity.musicService.getCurrentPosition()
-                    mseekBar.progress = curPosition
-                    currentProgress.text = getTimeFormat(curPosition.toLong())
+                    val curPosition = mActivity.musicService?.getCurrentPosition() ?: 0
+                    binding.seekBar.progress = curPosition
+                    binding.currentProgress.text = getTimeFormat(curPosition.toLong())
                     handler.post(this)
                 }
             }
@@ -79,10 +70,10 @@ class PlayFragment: BaseFragment() {
             if (isChangeImg){
                 loadImg(song)
             }
-            playPause.setImageResource(img)
+            binding.playIc.setImageResource(img)
         }
-        if (mActivity.serviceBound){
-            mActivity.musicService.addCallBack(callBack)
+        if (mActivity.isServiceBound){
+            mActivity.musicService?.addCallBack(callBack)
         }else {
             dataPasser.passCallBack(callBack)
         }
@@ -90,46 +81,46 @@ class PlayFragment: BaseFragment() {
     }
 
     private fun addListener(){
-        next.setOnClickListener {
-            if (mActivity.serviceBound){
-                mActivity.musicService.nextSong()
+        binding.nextIc.setOnClickListener {
+            if (mActivity.isServiceBound){
+                mActivity.musicService?.nextSong()
             }
         }
 
-        playPause.setOnClickListener {
-            if (mActivity.serviceBound){
-                mActivity.musicService.playPause()
+        binding.playIc.setOnClickListener {
+            if (mActivity.isServiceBound){
+                mActivity.musicService?.playPause()
             }
         }
 
-        previous.setOnClickListener {
-            if (mActivity.serviceBound){
-                mActivity.musicService.previousSong()
+        binding.previousIc.setOnClickListener {
+            if (mActivity.isServiceBound){
+                mActivity.musicService?.previousSong()
             }
         }
 
-        back.setOnClickListener {
+        binding.keyDown.setOnClickListener {
             activity?.supportFragmentManager?.popBackStack()
         }
 
-        playMode.setOnClickListener {
-            if (mActivity.serviceBound){
-                var playTag = mActivity.musicService.playTag
-                when (mActivity.musicService.playTag){
-                    0 -> playMode.setImageResource(R.drawable.ic_repeat_one)
-                    1 -> playMode.setImageResource(R.drawable.ic_shuffle)
-                    2 -> playMode.setImageResource(R.drawable.ic_repeat)
+        binding.playMode.setOnClickListener {
+            if (mActivity.isServiceBound){
+                var playTag = mActivity.musicService?.playTag ?: 0
+                when (mActivity.musicService?.playTag){
+                    0 -> binding.playMode.setImageResource(R.drawable.ic_repeat_one)
+                    1 -> binding.playMode.setImageResource(R.drawable.ic_shuffle)
+                    2 -> binding.playMode.setImageResource(R.drawable.ic_repeat)
                 }
                 playTag = (playTag + 1) % 3
-                mActivity.musicService.playTag = playTag
+                mActivity.musicService?.playTag = playTag
             }
         }
 
-        mseekBar.setOnSeekBarChangeListener(object: OnSeekBarChangeListener{
+        binding.seekBar.setOnSeekBarChangeListener(object: OnSeekBarChangeListener{
             override fun onProgressChanged(p0: SeekBar?, currentProgress: Int, fromUser: Boolean) {
                 if (fromUser){
-                    if (mActivity.serviceBound){
-                        mActivity.musicService.mediaSeekTo(currentProgress)
+                    if (mActivity.isServiceBound){
+                        mActivity.musicService?.mediaSeekTo(currentProgress)
                     }
                 }
             }
@@ -160,20 +151,23 @@ class PlayFragment: BaseFragment() {
     }
 
     private fun updateData(song: Song){
-        title.text = song.title
-        subTitle.text = song.artist
-        val duration = mActivity.musicService.getDuration()
-        mseekBar.max = duration
-        totalTime.text = getTimeFormat(duration.toLong())
+        binding.titleSong.text = song.title
+        binding.subTitleSong.text = song.artist
+        val duration = mActivity.musicService?.getDuration() ?: 0
+        binding.seekBar.max = duration
+        binding.totalProgress.text = getTimeFormat(duration.toLong())
     }
 
     private fun loadImg(song: Song){
-        val mmr = MediaMetadataRetriever()
-        mmr.setDataSource(song.path)
-        Glide.with(mActivity.applicationContext)
-            .load(mmr.embeddedPicture)
-            .placeholder(R.drawable.ic_baseline_music_note)
-            .into(imgMusic)
+        context?.let {
+            val mmr = MediaMetadataRetriever()
+            mmr.setDataSource(song.path)
+            Glide.with(it)
+                .load(mmr.embeddedPicture)
+                .placeholder(R.drawable.ic_baseline_music_note)
+                .error(R.drawable.ic_baseline_music_note)
+                .into(binding.imgMusic)
+        }
     }
 
     interface OnDataPass{

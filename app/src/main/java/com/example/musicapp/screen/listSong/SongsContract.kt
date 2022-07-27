@@ -5,9 +5,10 @@ import com.example.musicapp.dataSource.model.Song
 
 class SongsContract {
     interface View {
+        fun onGetSongCompleted(list: MutableList<Song>)
     }
 
     interface Presenter{
-        fun getSong(context: Context): MutableList<Song>
+        fun getSong(context: Context)
     }
 }

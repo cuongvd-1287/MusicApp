@@ -18,35 +18,37 @@ import com.example.musicapp.service.MusicService
 
 class MainActivity : AppCompatActivity(), SongListFragment.OnDataPass, PlayFragment.OnDataPass {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var songList: MutableList<Song>
-    private lateinit var callBack: (Int, Song, Boolean) -> Unit
-    lateinit var musicService: MusicService
-    var serviceBound = false
+    private var binding: ActivityMainBinding? = null
+    private val songList: MutableList<Song> = mutableListOf()
+    private var callBack: ((Int, Song, Boolean) -> Unit)? = null
+    var musicService: MusicService? = null
+    var isServiceBound = false
     private var myConnection = object: ServiceConnection{
 
         override fun onServiceConnected(p0: ComponentName?, binder: IBinder?) {
             val myBinder = binder as MusicService.MyBinder
             musicService = myBinder.getService()
-            serviceBound = true
-            if (this@MainActivity::songList.isInitialized){
-                musicService.setSongList(songList)
-                musicService.addCallBack(callBack)
+            isServiceBound = true
+            if (songList.isNotEmpty()){
+                musicService?.setSongList(songList)
+                musicService?.addCallBack(callBack)
             }
         }
 
         override fun onServiceDisconnected(p0: ComponentName?) {
-            serviceBound = false
+            isServiceBound = false
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val intent = Intent(this, MusicService::class.java)
-        applicationContext.bindService(intent, myConnection, Context.BIND_AUTO_CREATE)
         supportActionBar?.hide()
+        if (!isServiceBound){
+            bindService(intent, myConnection, Context.BIND_AUTO_CREATE)
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
         grantPermission()
     }
 
@@ -56,10 +58,10 @@ class MainActivity : AppCompatActivity(), SongListFragment.OnDataPass, PlayFragm
                 != PackageManager.PERMISSION_GRANTED){
                 requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 100)
             }else{
-                addFragment()
+                addSongListFragment()
             }
         } else{
-            addFragment()
+            addSongListFragment()
         }
     }
 
@@ -71,19 +73,21 @@ class MainActivity : AppCompatActivity(), SongListFragment.OnDataPass, PlayFragm
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100){
             if (grantResults.isNotEmpty() && grantResults.first() == PackageManager.PERMISSION_GRANTED ){
-                addFragment()
+                addSongListFragment()
             }
         }
     }
 
-    private fun addFragment(){
-        supportFragmentManager.beginTransaction()
-            .replace(binding.layoutContainer.id, SongListFragment())
-            .commit()
+    private fun addSongListFragment(){
+        binding?.layoutContainer?.let {
+            supportFragmentManager.beginTransaction()
+                .replace(it.id, SongListFragment())
+                .commit()
+        }
     }
 
     override fun passData(list: MutableList<Song>) {
-        songList = list
+        songList.addAll(list)
     }
 
     override fun passCallBack(callBack: (Int, Song, Boolean) -> Unit) {
@@ -91,7 +95,10 @@ class MainActivity : AppCompatActivity(), SongListFragment.OnDataPass, PlayFragm
     }
 
     override fun onDestroy() {
+        if (isServiceBound){
+            unbindService(myConnection)
+            isServiceBound = false
+        }
         super.onDestroy()
-        applicationContext.unbindService(myConnection)
     }
 }
