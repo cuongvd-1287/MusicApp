@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".screen.play.PlayFragment"
-    android:background="@color/coral"
+    android:background="@color/color_coral"
     android:clickable="true"
     android:focusable="true">
 
@@ -31,7 +31,7 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:text="@string/title"
-        android:textColor="@color/white"
+        android:textColor="@color/color_white"
         android:textSize="@dimen/title"
         app:layout_constraintStart_toEndOf="@id/key_down"
         app:layout_constraintEnd_toEndOf="parent"
@@ -44,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/subtitle"
-        android:textColor="@color/white"
+        android:textColor="@color/color_white"
         android:textSize="@dimen/sub_title"
         app:layout_constraintTop_toBottomOf="@id/title_song"
         app:layout_constraintStart_toStartOf="@id/title_song"/>
@@ -67,8 +67,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp_50"
         android:fitsSystemWindows="true"
-        android:progressTint="@color/white"
-        android:thumbTint="@color/white"
+        android:progressTint="@color/color_white"
+        android:thumbTint="@color/color_white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/img_music" />
 
@@ -79,7 +79,7 @@
         app:layout_constraintTop_toBottomOf="@id/seek_bar"
         app:layout_constraintStart_toStartOf="@id/seek_bar"
         android:text="@string/current_progress"
-        android:textColor="@color/white"
+        android:textColor="@color/color_white"
         android:layout_marginStart="@dimen/dp_10"/>
 
     <TextView
@@ -89,7 +89,7 @@
         app:layout_constraintEnd_toEndOf="@id/seek_bar"
         app:layout_constraintTop_toBottomOf="@id/seek_bar"
         android:text="@string/total"
-        android:textColor="@color/white"
+        android:textColor="@color/color_white"
         android:layout_marginEnd="@dimen/dp_10"/>
 
     <ImageView
@@ -100,7 +100,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/current_progress"
         android:src="@drawable/ic_pause"
-        app:tint="@color/white"/>
+        app:tint="@color/color_white"/>
 
     <ImageView
         android:id="@+id/previous_ic"
@@ -109,7 +109,7 @@
         app:layout_constraintEnd_toStartOf="@id/play_ic"
         app:layout_constraintTop_toTopOf="@id/play_ic"
         android:src="@drawable/ic_previous"
-        app:tint="@color/white"
+        app:tint="@color/color_white"
         android:layout_marginEnd="@dimen/dp_20"/>
     <ImageView
         android:id="@+id/next_ic"
@@ -118,7 +118,7 @@
         app:layout_constraintStart_toEndOf="@id/play_ic"
         app:layout_constraintTop_toTopOf="@id/play_ic"
         android:src="@drawable/ic_next"
-        app:tint="@color/white"
+        app:tint="@color/color_white"
         android:layout_marginStart="@dimen/dp_20"/>
 
     <ImageView
@@ -128,6 +128,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/play_ic"
         app:layout_constraintStart_toEndOf="@id/next_ic"
         android:src="@drawable/ic_repeat"
-        app:tint="@color/white"
+        app:tint="@color/color_white"
         android:layout_marginStart="@dimen/dp_20" />
 </androidx.constraintlayout.widget.ConstraintLayout>

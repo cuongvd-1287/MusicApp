@@ -2,12 +2,12 @@
 <shape
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="ring"
-    android:innerRadius="0dp"
+    android:innerRadius="@dimen/dp_0"
     android:thicknessRatio="2"
     android:useLevel="false">
     <stroke
-        android:width="2dp"
-        android:color="@color/white"/>
+        android:width="@dimen/dp_2"
+        android:color="@color/color_white"/>
     <solid
-        android:color="@color/white"/>
+        android:color="@color/color_white"/>
 </shape>

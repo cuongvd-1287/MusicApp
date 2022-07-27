@@ -4,8 +4,8 @@ import android.content.Context
 import com.example.musicapp.dataSource.model.Song
 
 class SongRepository(private val source: SongLocalDataSource): SongDataSource {
-    override fun getSongList(context: Context): MutableList<Song> {
-        return source.getSong(context)
+    override fun getSongList(context: Context, listener: OnResultListener<MutableList<Song>>) {
+        source.getSong(context, listener)
     }
 
     companion object {

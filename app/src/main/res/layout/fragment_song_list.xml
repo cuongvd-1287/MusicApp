@@ -54,7 +54,7 @@
             app:layout_constraintEnd_toStartOf="@id/sub_previous"
             app:layout_constraintStart_toEndOf="@id/img_music_note"
             app:layout_constraintTop_toTopOf="parent"
-            android:textColor="@color/black"
+            android:textColor="@color/color_black"
             android:textStyle="bold"
             android:textSize="@dimen/title"
             android:layout_marginStart="@dimen/dp_10"
@@ -67,7 +67,7 @@
             app:layout_constraintStart_toStartOf="@id/title_play"
             app:layout_constraintTop_toBottomOf="@id/title_play"
             android:text="@string/subtitle"
-            android:textColor="@color/gray"
+            android:textColor="@color/color_gray"
             android:textStyle="normal"
             android:textSize="@dimen/sub_title"/>
 

@@ -8,11 +8,10 @@ import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
-import android.util.Log
 import com.example.musicapp.R
+import com.example.musicapp.constant.*
 import com.example.musicapp.dataSource.model.Song
 import com.example.musicapp.notification.AppNotification
-import com.example.musicapp.constant.*
 
 class MusicService: Service() {
     private val myBinder = MyBinder()
@@ -41,6 +40,7 @@ class MusicService: Service() {
     }
 
     override fun onCreate() {
+        mediaPlayer.isLooping = true
         mediaPlayer.setOnCompletionListener {
             when (playTag){
                 0 -> nextSong()
@@ -132,7 +132,7 @@ class MusicService: Service() {
     }
 
     companion object{
-        private var changeData = mutableListOf<((Int, Song, Boolean) -> Unit)?>()
+        private val changeData = mutableListOf<((Int, Song, Boolean) -> Unit)?>()
     }
 
     inner class MyBinder: Binder(){

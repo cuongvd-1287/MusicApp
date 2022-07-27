@@ -1,9 +1,9 @@
 package com.example.musicapp.screen.play
 
+import android.animation.Animator
+import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,13 +15,15 @@ import com.example.musicapp.R
 import com.example.musicapp.dataSource.model.Song
 import com.example.musicapp.databinding.PlayFragmentBinding
 import com.example.musicapp.screen.MainActivity
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.schedule
 
 class PlayFragment: BaseFragment() {
 
     private lateinit var binding: PlayFragmentBinding
     private val mActivity: MainActivity by lazy { activity as MainActivity }
-    private val dataPasser: OnDataPass by lazy { context as OnDataPass }
+    private val dataPasser: DataPassListener by lazy { context as DataPassListener }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,7 +34,21 @@ class PlayFragment: BaseFragment() {
         return binding.root
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+    }
 
+    override fun onDetach() {
+        super.onDetach()
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
     override fun initView() {
         if (mActivity.isServiceBound){
             val index = mActivity.musicService?.currentIndex
@@ -50,16 +66,13 @@ class PlayFragment: BaseFragment() {
                     binding.playIc.setImageResource(R.drawable.ic_play)
                 }
             }
-            val handler = Handler(Looper.getMainLooper())
-            val runnable = object: Runnable {
-                override fun run() {
+            Timer().schedule(0, 10){
+                mActivity.runOnUiThread {
                     val curPosition = mActivity.musicService?.getCurrentPosition() ?: 0
                     binding.seekBar.progress = curPosition
                     binding.currentProgress.text = getTimeFormat(curPosition.toLong())
-                    handler.post(this)
                 }
             }
-            handler.post(runnable)
         }
     }
 
@@ -136,7 +149,7 @@ class PlayFragment: BaseFragment() {
         })
     }
 
-    fun getTimeFormat(time: Long): String{
+    private fun getTimeFormat(time: Long): String{
         val hour = TimeUnit.MILLISECONDS.toHours(time)
         val minute = TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(hour)
         val second = TimeUnit.MILLISECONDS.toSeconds(time) -
@@ -170,7 +183,7 @@ class PlayFragment: BaseFragment() {
         }
     }
 
-    interface OnDataPass{
+    interface DataPassListener{
         fun passCallBack(callBack: (Int, Song, Boolean) -> Unit)
     }
 }

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 class SongLocalDataSource {
 
-    fun getSong(context: Context): MutableList<Song> {
+    fun getSong(context: Context, listener: OnResultListener<MutableList<Song>>) {
         val contentResolver = context.contentResolver
         val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.ARTIST,
@@ -34,10 +34,10 @@ class SongLocalDataSource {
                         list.add(song)
                     } while (cursor.moveToNext())
                 }
+                listener.onSuccess(list)
             }
             cursor?.close()
         }
-        return list
     }
 
     companion object{

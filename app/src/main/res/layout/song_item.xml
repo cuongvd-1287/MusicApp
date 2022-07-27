@@ -25,7 +25,7 @@
             android:text="@string/title"
             android:textSize="@dimen/title"
             android:id="@+id/title"
-            android:textColor="@color/black"
+            android:textColor="@color/color_black"
             android:textStyle="bold"/>
 
         <TextView
@@ -35,6 +35,6 @@
             android:id="@+id/artist"
             android:textSize="@dimen/sub_title"
             android:textStyle="normal"
-            android:textColor="@color/gray"/>
+            android:textColor="@color/color_gray"/>
     </LinearLayout>
 </LinearLayout>

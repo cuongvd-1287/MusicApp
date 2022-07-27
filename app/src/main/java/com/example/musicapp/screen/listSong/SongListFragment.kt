@@ -5,7 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import androidx.fragment.app.FragmentTransaction
 import com.bumptech.glide.Glide
 import com.example.musicapp.BaseFragment
 import com.example.musicapp.R
@@ -29,7 +30,7 @@ class SongListFragment : BaseFragment(), SongsContract.View, AdapterView.OnItemC
     }
 
     private lateinit var binding: FragmentSongListBinding
-    private val dataPasser: OnDataPass by lazy { context as OnDataPass }
+    private val dataPasser: DataPassListener by lazy { context as DataPassListener }
     private val mActivity: MainActivity by lazy { activity as MainActivity }
 
     override fun onCreateView(
@@ -70,7 +71,9 @@ class SongListFragment : BaseFragment(), SongsContract.View, AdapterView.OnItemC
     }
 
     private fun setSong(list: MutableList<Song>) {
-        binding.listSong.adapter = context?.let { SongAdapter(it, list) }
+        binding.listSong.adapter = context?.let {
+            SongAdapter(it, list)
+        }
         if (mActivity.isServiceBound) {
             mActivity.musicService?.setSongList(list)
         } else {
@@ -88,16 +91,22 @@ class SongListFragment : BaseFragment(), SongsContract.View, AdapterView.OnItemC
     }
 
     private fun addPlayFragment() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_in,
-                R.anim.fade_out,
-                R.anim.fade_in,
-                R.anim.slide_out
-            )
-            .add(R.id.layoutContainer, PlayFragment())
-            .addToBackStack(null)
-            .commit()
+        val transaction = parentFragmentManager.beginTransaction()
+        transaction.apply {
+            addAnimationFragmentChange(this)
+            add(R.id.layoutContainer, PlayFragment())
+            addToBackStack(null)
+            commit()
+        }
+    }
+
+    private fun addAnimationFragmentChange(transaction: FragmentTransaction){
+        transaction.setCustomAnimations(
+            R.anim.slide_in,
+            R.anim.fade_out,
+            R.anim.fade_in,
+            R.anim.slide_out
+        )
     }
 
     private fun loadImg(song: Song) {
@@ -142,7 +151,7 @@ class SongListFragment : BaseFragment(), SongsContract.View, AdapterView.OnItemC
         setSong(list)
     }
 
-    interface OnDataPass {
+    interface DataPassListener {
         fun passData(list: MutableList<Song>)
         fun passCallBack(callBack: (Int, Song, Boolean) -> Unit)
     }

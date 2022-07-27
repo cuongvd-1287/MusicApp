@@ -7,16 +7,16 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import androidx.appcompat.app.AppCompatActivity
 import com.example.musicapp.dataSource.model.Song
 import com.example.musicapp.databinding.ActivityMainBinding
 import com.example.musicapp.screen.listSong.SongListFragment
 import com.example.musicapp.screen.play.PlayFragment
 import com.example.musicapp.service.MusicService
 
-class MainActivity : AppCompatActivity(), SongListFragment.OnDataPass, PlayFragment.OnDataPass {
+class MainActivity : AppCompatActivity(), SongListFragment.DataPassListener, PlayFragment.DataPassListener {
 
     private var binding: ActivityMainBinding? = null
     private val songList: MutableList<Song> = mutableListOf()
