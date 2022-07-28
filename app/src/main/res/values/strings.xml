@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Music App</string>
+    <string name="song_list">Danh Sách Nhạc</string>
+    <string name="current_progress">0:00</string>
+    <string name="total">0:00</string>
+    <string name="title">Title</string>
+    <string name="subtitle">subTitle</string>
 </resources>
